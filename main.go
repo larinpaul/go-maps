@@ -219,58 +219,206 @@
 
 //// Key Types
 
-// Any type can be used as the value in a map, but keys are more restrictive.
+// // Any type can be used as the value in a map, but keys are more restrictive.
 
-// As mentioned earlier, map keys may be of any type that is comparable. The
-// language spec defines this precisely, but in short, comparable types are boolean,
-// numeric, string, pointer, channel, and interface types, and structs or arrays that
-// contain only those types. Notably absent from the list are slices, maps, and functions;
-// these types cannot be compared using ==, and may not be used as map keys.
+// // As mentioned earlier, map keys may be of any type that is comparable. The
+// // language spec defines this precisely, but in short, comparable types are boolean,
+// // numeric, string, pointer, channel, and interface types, and structs or arrays that
+// // contain only those types. Notably absent from the list are slices, maps, and functions;
+// // these types cannot be compared using ==, and may not be used as map keys.
 
-// It's abvious that strings, ints, and other basic types should be available as map keys,
-// but perhaps unexpected are struct keys. Struct can be used to key data by multiple
-// dimensions. For example, this map of maps could be used to tally web page hits by
-// country:
+// // It's abvious that strings, ints, and other basic types should be available as map keys,
+// // but perhaps unexpected are struct keys. Struct can be used to key data by multiple
+// // dimensions. For example, this map of maps could be used to tally web page hits by
+// // country:
 
-hits := make(map[string]map[string]int)
+// hits := make(map[string]map[string]int)
 
-// This is map of string to (map of string to int). Each key of the outer map is the path to
-// a web page with its own inner map. Each inner map key is a two-letter country code.
-// This expression retrieves the number of times an Australian has loaded the
-// documentation page:
-n := hits["/doc/"]["au"]
+// // This is map of string to (map of string to int). Each key of the outer map is the path to
+// // a web page with its own inner map. Each inner map key is a two-letter country code.
+// // This expression retrieves the number of times an Australian has loaded the
+// // documentation page:
+// n := hits["/doc/"]["au"]
 
-// Unfortunately, this approach becomes unwieldy whe naddign data, as for any given
-// outer key you must check if the inner map exists, and create it if needed:
-func add(m map[string]map[string]int, path, country string) {
-	mm, ok := m[path]
-	if !ok {
-		mm = make(map[string]int)
-		m[path] == mm
-	}
-	mm[country]++
-}
-add(hits, "/doc/", "au")
+// // Unfortunately, this approach becomes unwieldy whe naddign data, as for any given
+// // outer key you must check if the inner map exists, and create it if needed:
+// func add(m map[string]map[string]int, path, country string) {
+// 	mm, ok := m[path]
+// 	if !ok {
+// 		mm = make(map[string]int)
+// 		m[path] == mm
+// 	}
+// 	mm[country]++
+// }
+// add(hits, "/doc/", "au")
 
-// On the other had, a design that uses a single map with a struct key does away with
-// all that complexity:
-type Key struct {
-	Path, Country string
-}
-hits := make(map[Key]int)
+// // On the other had, a design that uses a single map with a struct key does away with
+// // all that complexity:
+// type Key struct {
+// 	Path, Country string
+// }
+// hits := make(map[Key]int)
 
-// When a Vietnamese person visits the home page, incrementing (and possible
-// creating) the appropriate counter is a one-liner:
-hits[Key{"/", "vn"}]++
+// // When a Vietnamese person visits the home page, incrementing (and possible
+// // creating) the appropriate counter is a one-liner:
+// hits[Key{"/", "vn"}]++
 
-// And it's similaryly straightforward to see how many Swiss people have read the spec:
-n := hits[Key{"/ref/spec/", "ch"}]
+// // And it's similaryly straightforward to see how many Swiss people have read the spec:
+// n := hits[Key{"/ref/spec/", "ch"}]
 
-
-//// 
+//// 2023/10/22 // 16:18 //
 
 //// 4-maps_count
 //// Count Instances
 
+// // Remember that you can check if a key is already present in a map by using the
+// // second return value from the index operation.
 
+// names := map[string]int{}
 
+// if _, ok := names["elon"]; !ok {
+// 	// if the key doesn't exist yet,
+// 	// initialize its value to 0
+// 	names["elon"] = 0
+// }
+
+//// Assignment
+
+// // We have a slice of user ids, and each instance of an id in the slice indicates that a
+// // message was sent to that user. We need to count up how many times each user's id
+// // appears in the slice to track how many messages they received.
+
+// // Implement the getCounts function. It should return a map of string -> int so that
+// // each int is a count of how many times each string was found in the slice.
+
+// package main
+
+// import (
+// 	"crypto/md5"
+// 	"fmt"
+// 	"io"
+// )
+
+// func getCounts(userIDs []string) map[string]int {
+// 	m := map[string]int{}
+// 	for _, id := range userIDs {
+// 		if _, ok := m[id]; !ok {
+// 			m[id] = 0
+// 		}
+// 		m[id]++
+// 	}
+// 	return m
+// }
+
+// func test(userIDs []string, ids []string) {
+// 	fmt.Printf("Generating counts for %v user IDs...\n", len(userIDs))
+
+// 	counts := getCounts(userIDs)
+// 	fmt.Println("Counts from select IDs:")
+// 	for _, k := range ids {
+// 		v := counts[k]
+// 		fmt.Printf(" - %s: %d\n", k, v)
+// 	}
+// 	fmt.Println("============================================")
+// }
+
+// func main() {
+// 	userIDs := []string{}
+// 	for i := 0; i < 10000; i++ {
+// 		h := md5.New()
+// 		io.WriteString(h, fmt.Sprint(i))
+// 		key := fmt.Sprintf("%x", h.Sum(nil))
+// 		userIDs = append(userIDs, key[:2])
+// 	}
+
+// 	test(userIDs, []string{"00", "ff", "dd"})
+// 	test(userIDs, []string{"aa", "12", "32"})
+// 	test(userIDs, []string{"bb", "33"})
+// }
+
+//// 16:29
+
+//// Nested
+
+// // Maps can contain maps, creating a nested structure. For example:
+// map[string]map[string]int
+// map[rune]map[string]int
+// map[int]map[string]map[string]int
+
+// //// Assignment
+
+// // Because Textio is a glorified customer database, we have a lot of internal logic for
+// // sorting and dealing with customer names.
+
+// // Complete the getNameCounts function. It takes a slice of string (names) and returns
+// // a nested map where the first key is all the unique first characters of the names, the
+// // second key is all the names themselves, and the value is the count of each name.
+
+// // For example:
+// // billy
+// // billy
+// // bob
+// // joe
+
+// // Creates the folowing nested map:
+// b: {
+// 	billy: 2,
+// 	bob: 1
+// },
+// j: {
+// 	joe: 1
+// }
+
+// Note that the test suite is not printing the map you're returning directly, but instead
+// checking some specific keys.
+
+package main
+
+import "fmt"
+
+func getNameCounts(names []string) map[rune]map[string]int {
+	nameCounts := make(map[rune]map[string]int)
+	for _, name := range names {
+		firstLetter := rune(0)
+		if len(name) != 0 {
+			firstLetter = rune(name[0])
+		}
+
+		if _, ok := nameCounts[firstLetter]; !ok {
+			nameCounts[firstLetter] = make(map[string]int)
+		}
+		if _, ok := nameCounts[firstLetter][name]; !ok {
+			nameCounts[firstLetter][name] = 0
+		}
+		nameCounts[firstLetter][name]++
+	}
+	return nameCounts
+}
+
+func test(names []string, initial rune, name string) {
+	fmt.Printf("Generating counts for %v names...\n", len(names))
+
+	nameCounts := getNameCounts(names)
+	count := nameCounts[initial][name]
+	fmt.Printf("Count for [%c][%s]: %d\n", initial, name, count)
+	fmt.Println("=============================================")
+}
+
+func main() {
+	test(getNames(50), 'M', "Matthew")
+	test(getNames(100), 'G', "George")
+	test(getNames(150), 'D', "Drew")
+	test(getNames(200), 'P', "Phillip")
+	test(getNames(250), 'B', "Bryant")
+	test(getNames(300), 'M', "Matthew")
+}
+
+func getNames(length int) []string {
+	names := []string{
+		"Grant", "Eduardo", "Peter", "Matthew", "Matthew", "Matthew", "Peter", "Peter", "Henry", "Parker", "Parker", "Parker", "Collin", "Hayden", "George", "Bradley", "Mitchell", "Devon", "Ricardo", "Shawn", "Taylor", "Nicolas", "Gregory", "Francisco", "Liam", "Kaleb", "Preston", "Erik", "Alexis", "Owen", "Omar", "Diego", "Dustin", "Corey", "Fernando", "Clayton", "Carter", "Ivan", "Jaden", "Javier", "Alec", "Johnathan", "Scott", "Manuel", "Cristian", "Alan", "Raymond", "Brett", "Max", "Drew", "Andres", "Gage", "Mario", "Dawson", "Dillon", "Cesar", "Wesley", "Levi", "Jakob", "Chandler", "Martin", "Malik", "Edgar", "Sergio", "Trenton", "Josiah", "Nolan", "Marco", "Drew", "Peyton", "Harrison", "Drew", "Hector", "Micah", "Roberto", "Drew", "Brady", "Erick", "Conner", "Jonah", "Casey", "Jayden", "Edwin", "Emmanuel", "Andre", "Phillip", "Brayden", "Landon", "Giovanni", "Bailey", "Ronald", "Braden", "Damian", "Donovan", "Ruben", "Frank", "Gerardo", "Pedro", "Andy", "Chance", "Abraham", "Calvin", "Trey", "Cade", "Donald", "Derrick", "Payton", "Darius", "Enrique", "Keith", "Raul", "Jaylen", "Troy", "Jonathon", "Cory", "Marc", "Eli", "Skyler", "Rafael", "Trent", "Griffin", "Colby", "Johnny", "Chad", "Armando", "Kobe", "Caden", "Marcos", "Cooper", "Elias", "Brenden", "Israel", "Avery", "Zane", "Zane", "Zane", "Zane", "Dante", "Josue", "Zackary", "Allen", "Philip", "Mathew", "Dennis", "Leonardo", "Ashton", "Philip", "Philip", "Philip", "Julio", "Miles", "Damien", "Ty", "Gustavo", "Drake", "Jaime", "Simon", "Jerry", "Curtis", "Kameron", "Lance", "Brock", "Bryson", "Alberto", "Dominick", "Jimmy", "Kaden", "Douglas", "Gary", "Brennan", "Zachery", "Randy", "Louis", "Larry", "Nickolas", "Albert", "Tony", "Fabian", "Keegan", "Saul", "Danny", "Tucker", "Myles", "Damon", "Arturo", "Corbin", "Deandre", "Ricky", "Kristopher", "Lane", "Pablo", "Darren", "Jarrett", "Zion", "Alfredo", "Micheal", "Angelo", "Carl", "Oliver", "Kyler", "Tommy", "Walter", "Dallas", "Jace", "Quinn", "Theodore", "Grayson", "Lorenzo", "Joe", "Arthur", "Bryant", "Roman", "Brent", "Russell", "Ramon", "Lawrence", "Moises", "Aiden", "Quentin", "Jay", "Tyrese", "Tristen", "Emanuel", "Salvador", "Terry", "Morgan", "Jeffery", "Esteban", "Tyson", "Braxton", "Branden", "Marvin", "Brody", "Craig", "Ismael", "Rodney", "Isiah", "Marshall", "Maurice", "Ernesto", "Emilio", "Brendon", "Kody", "Eddie", "Malachi", "Abel", "Keaton", "Jon", "Shaun", "Skylar", "Ezekiel", "Nikolas", "Santiago", "Kendall", "Axel", "Camden", "Trevon", "Bobby", "Conor", "Jamal", "Lukas", "Malcolm", "Zackery", "Jayson", "Javon", "Roger", "Reginald", "Zachariah", "Desmond", "Felix", "Johnathon", "Dean", "Quinton", "Ali", "Davis", "Gerald", "Rodrigo", "Demetrius", "Billy", "Rene", "Reece", "Kelvin", "Leo", "Justice", "Chris", "Guillermo", "Matthew", "Matthew", "Matthew", "Kevon", "Steve", "Frederick", "Clay", "Weston", "Dorian", "Hugo", "Roy", "Orlando", "Terrance", "Kai", "Khalil", "Khalil", "Khalil", "Graham", "Noel", "Willie", "Nathanael", "Terrell", "Tyrone",
+	}
+	if length > len(names) {
+		length = len(names)
+	}
+	return names[:length]
+}
